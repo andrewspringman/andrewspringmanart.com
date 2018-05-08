@@ -5,7 +5,8 @@
 </head>
 <body id="theBody">
     <script>
-    	var api = 'http://andrewspringmanart.com/directus/api/1.1/'; 
+		var host = 'http://andrewspringmanart.com';
+    	var api = host + '/directus/api/1.1/'; 
     	
     	function display_sizes(artwork_code) {
         	axios.get('http://andrewspringmanart.com/directus/api/1.1/tables/products/rows?filters[product_artwork][contains]='+artwork_code)
@@ -39,7 +40,7 @@
 	        	var s = navigation();
 	        	s += '<div>' + blurb_response.data.data[0].blurb_content + '</div>';
 	            	artwork_response.data.data.forEach(function(element){
-	            		s += '<img src="' + element.artwork_image.data.url + '"/><br/>';
+	            		s += '<img src="' + host + element.artwork_image.data.url + '"/><br/>';
 	            		s += '<div>' + element.artwork_title 		+ '</div>';
 	            		s += '<div>' + element.artwork_description 	+ '</div>';
 	            		s += '<div><a href="index.html?page=sizes&artwork_code=' + element.artwork_code + '">Sizes and Prices</a></div>';
@@ -88,7 +89,7 @@
 	        	var s = navigation();
 	        	s += '<div>' + blurb_response.data.data[0].blurb_content + '</div>';
 	            	news_response.data.data.forEach(function(element){
-	            		s += '<img src="' + element.article_featured_image.data.url + '"/><br/>';
+	            		s += '<img src="' + host + element.article_featured_image.data.url + '"/><br/>';
 	            		s += '<div>' + element.article_title 		+ '</div>';
 	            		s += '<div>' + element.article_copy 	+ '</div>';
 	            	})
