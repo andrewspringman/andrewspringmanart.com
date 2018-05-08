@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="axios.min.js"></script>
+</head>
+<body id="theBody">
+    <script>
+    	var api = 'http://andrewspringmanart.com/directus/api/1.1/'; 
+    	
+    	function display_sizes(artwork_code) {
+        	axios.get('http://andrewspringmanart.com/directus/api/1.1/tables/products/rows?filters[product_artwork][contains]='+artwork_code)
+	        .then(function (response) {
+	        	var s = navigation();
+	            	response.data.data.forEach(function(element){
+	            		s += '<div>' + element.product_type.data.product_type;
+	            		s += ' Price: ' + element.product_type.data.product_type_price  + '</div>';
+	            		s += '<div><p>' + element.product_type.data.product_type_description       + '</p></div>';
+	            	})
+	                document.getElementById("theBody").innerHTML = s;
+	
+	        })
+	        .catch(function (error) {
+	            document.getElementById("theBody").innerHTML = error;
+	        });
+    	}
+    	
+	function getBlurb(blurb_name) {
+	  return axios.get(api + 'tables/blurbs/rows?filters[blurb_name][eq]='+blurb_name);
+	}
+	
+	function getArtwork() {
+	  return axios.get(api + 'tables/artwork/rows');
+	}
+	
+	function displayGallery() {	
+		axios.all([getBlurb('Gallery Blurb'), getArtwork()])
+		.then(axios.spread(function (blurb_response, artwork_response) {
+			// All requests are now complete
+	        	var s = navigation();
+	        	s += '<div>' + blurb_response.data.data[0].blurb_content + '</div>';
+	            	artwork_response.data.data.forEach(function(element){
+	            		s += '<img src="' + element.artwork_image.data.url + '"/><br/>';
+	            		s += '<div>' + element.artwork_title 		+ '</div>';
+	            		s += '<div>' + element.artwork_description 	+ '</div>';
+	            		s += '<div><a href="index.html?page=sizes&artwork_code=' + element.artwork_code + '">Sizes and Prices</a></div>';
+	            	})
+	                document.getElementById("theBody").innerHTML = s;	
+	        }))
+	        .catch(function (error) {
+	            document.getElementById("theBody").innerHTML = error;
+	        });
+	}
+	
+	function getFAQs() {
+	  return axios.get(api + 'tables/faqs/rows?order[faq_category]=asc');
+	}
+	
+	function displayFAQs() {	
+		axios.all([getBlurb('FAQ Blurb'), getFAQs()])
+		.then(axios.spread(function (blurb_response, faq_response) {
+			// All requests are now complete
+	        	var s = navigation();
+	        	var category = '';
+	        	s += '<div>' + blurb_response.data.data[0].blurb_content + '</div>';
+	            	faq_response.data.data.forEach(function(element){
+	            		if (category != element.faq_category.data.faq_category) {
+	            			category = element.faq_category.data.faq_category;
+	            			s += '<div>' + category + '</div>';
+	            		}
+	            		s += '<div>' + element.faq_question 		+ '</div>';
+	            		s += '<div>' + element.faq_answer 	+ '</div>';
+	            	})
+	                document.getElementById("theBody").innerHTML = s;	
+	        }))
+	        .catch(function (error) {
+	            document.getElementById("theBody").innerHTML = error;
+	        });
+	}
+	
+	function getNews() {
+	  return axios.get(api + 'tables/news_articles/rows');
+	}
+	
+	function displayNews() {	
+		axios.all([getBlurb('News Blurb'), getNews()])
+		.then(axios.spread(function (blurb_response, news_response) {
+			// All requests are now complete
+	        	var s = navigation();
+	        	s += '<div>' + blurb_response.data.data[0].blurb_content + '</div>';
+	            	news_response.data.data.forEach(function(element){
+	            		s += '<img src="' + element.article_featured_image.data.url + '"/><br/>';
+	            		s += '<div>' + element.article_title 		+ '</div>';
+	            		s += '<div>' + element.article_copy 	+ '</div>';
+	            	})
+	                document.getElementById("theBody").innerHTML = s;	
+	        }))
+	        .catch(function (error) {
+	            document.getElementById("theBody").innerHTML = error;
+	        });
+	}
+	
+		function getNews() {
+	  return axios.get(api + 'tables/news_articles/rows');
+	}
+	
+	function displayAbout() {	
+		axios.all([getBlurb('Artist Blurb')])
+		.then(axios.spread(function (blurb_response) {
+			// All requests are now complete
+	        	var s = navigation();
+	        	s += '<div>' + blurb_response.data.data[0].blurb_content + '</div>';
+	                document.getElementById("theBody").innerHTML = s;	
+	        }))
+	        .catch(function (error) {
+	            document.getElementById("theBody").innerHTML = error;
+	        });
+	}
+	
+	function displayHome() {	
+		axios.all([getBlurb('Home Blurb')])
+		.then(axios.spread(function (blurb_response) {
+			// All requests are now complete
+	        	var s = navigation();
+	        	s += '<div>' + blurb_response.data.data[0].blurb_content + '</div>';
+	                document.getElementById("theBody").innerHTML = s;	
+	        }))
+	        .catch(function (error) {
+	            document.getElementById("theBody").innerHTML = error;
+	        });
+	}
+	
+	function navigation() {
+		return '<div><a href="index.html">Home</a> | ' + 
+		'<a href="index.html?page=artist">Artist</a> | ' +
+		'<a href="index.html?page=gallery">Gallery</a> | ' +
+		'<a href="index.html?page=news">News</a> | ' +
+		'<a href="index.html?page=faq">FAQ</a></div>';
+	}
+	
+	function router() {
+		var url = new URL(window.location.href);
+		var page = url.searchParams.get("page");
+		switch(page) {
+		    case 'home':
+		        displayHome();
+		        break;
+		    case 'artist':
+		        displayAbout();
+		        break;
+		    case 'gallery':
+		        displayGallery();
+		        break;
+		    case 'news':
+		        displayNews();
+		        break;
+		    case 'faq':
+		        displayFAQs();
+		        break;
+		    case 'sizes':
+		    	var artwork_code = url.searchParams.get("artwork_code");
+		    	if (artwork_code == '') {
+		    		displayHome();
+		    	} else {
+		    		display_sizes(artwork_code);
+		    	}
+		    	break;
+		    default:
+		        displayHome();
+		}
+	}
+	
+	router();
+	
+    </script>
+
+
+</body>
+</html>
