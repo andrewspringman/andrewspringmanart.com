@@ -148,7 +148,7 @@ function onClick(element) {
 window.onscroll = function() {myFunction()};
 function myFunction() {
     var navbar = document.getElementById("myNavbar");
-    if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+    if (document.body.scrollTop > 10 || document.documentElement.scrollTop > 10) {
         navbar.className = "w3-bar" + " w3-card" + " w3-animate-top" + " w3-white";
     } else {
         navbar.className = navbar.className.replace(" w3-card w3-animate-top w3-white", "");
@@ -166,25 +166,37 @@ function toggleFunction() {
 } 
 //TEMPLATE ROUTINES (END)
 
+function getSizes(code) {
+  return axios.get(api + 'tables/products/rows?filters[product_artwork][contains]=' + code);
+}
+
+function getPiece(code) {
+  return axios.get(api + 'tables/artwork/rows?filters[artwork_code][contains]=' + code);
+}
+
 function display_piece(artwork_code) {
 //TODO: format this page
 //TODO: add image
-//TODO: add image description
 //TODO: add ordering instructions
-  axios.get('http://andrewspringmanart.com/directus/api/1.1/tables/products/rows?filters[product_artwork][contains]='+artwork_code)
-  .then(function (response) {
+  axios.all( [getPiece(artwork_code), getSizes(artwork_code)] )
+  .then(axios.spread(function (artwork_response, sizes_response) {
     var s = navigation();
-    s += page_title(response.data.data[0].product_artwork.data.artwork_title);
-    s += '<h4>' + response.data.data[0].product_artwork.data.artwork_description + '</h4>';
-    s += '<h4>' + response.data.data[0].product_artwork.data.artwork_image + '</h4>';
-    response.data.data.forEach(function(element){
+    s += page_title(artwork_response.data.data[0].artwork_title);
+    s += '<div class="w3-row w3-margin-top w3-margin-bottom w3-center">';
+    s += '  <div class="w3-col m12 l12 w3-padding">';
+    s += '    <img class="galleryImg" src="' + host + artwork_response.data.data[0].artwork_image.data.url + '"/><br/>';
+    s += '    <h4>' + artwork_response.data.data[0].artwork_description + '</h4>';
+    s += '  </div>';
+    s += '<h3>Sizes and Prices</h3>';
+    sizes_response.data.data.forEach(function(element){
       s += '<div>' + element.product_type.data.product_type + ', ';
       s += element.product_type.data.product_type_description + ', ';
       s += 'Price: ' + element.product_type.data.product_type_price  + ' (USD)</div>';
     })
+    s += '<p>To order, email or call (see below) and give the title and size.</p></div>';
     s += footer();
     document.getElementById("theBody").innerHTML = s;
-  })
+  }))
   .catch(function (error) {
       document.getElementById("theBody").innerHTML = error;
   });
@@ -266,6 +278,8 @@ function getNews() {
 }
 
 function displayNews() {	
+//TODO: format page
+//TODO: individual article pages
   axios.all([getBlurb('News Blurb'), getNews()])
   .then(axios.spread(function (blurb_response, news_response) {
     // All requests are now complete
