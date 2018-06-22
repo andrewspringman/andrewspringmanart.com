@@ -85,8 +85,8 @@ body, html {
 var host = 'http://andrewspringmanart.com';
 var api = host + '/directus/api/1.1/';
 
-function navigation() {
-  //TODO: fix Contact link
+function navigation(home = false) {
+  contact_link = home ? 'index.html#contact' : 'index.html?page=contact';
   return '' +
   '<!-- Navbar (sit on top) -->' +
   '<div class="w3-top">' +
@@ -99,7 +99,7 @@ function navigation() {
   '    <a href="index.html?page=gallery" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-th"></i> GALLERY</a>' +
   '    <a href="index.html?page=news" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-newspaper-o"></i> NEWS</a>' +
   '    <a href="index.html?page=faq" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-question-circle-o"></i> FAQ</a>' +
-  '    <a href="index.html#contact" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-envelope"></i> CONTACT</a>' +
+  '    <a href="' + contact_link + '" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-envelope"></i> CONTACT</a>' +
   '    <!-- a href="#" class="w3-bar-item w3-button w3-hide-small w3-right w3-hover-red">' +
   '      <i class="fa fa-search"></i>' +
   '    </a -->' +
@@ -111,7 +111,7 @@ function navigation() {
   '    <a href="index.html?page=gallery" class="w3-bar-item w3-button" onclick="toggleFunction()">GALLERY</a>' +
   '    <a href="index.html?page=news" class="w3-bar-item w3-button" onclick="toggleFunction()">NEWS</a>' +
   '    <a href="index.html?page=faq" class="w3-bar-item w3-button" onclick="toggleFunction()">FAQ</a>' +
-  '    <a href="index.html#contact" class="w3-bar-item w3-button" onclick="toggleFunction()">CONTACT</a>' +
+  '    <a href="' + contact_link + '" class="w3-bar-item w3-button" onclick="toggleFunction()">CONTACT</a>' +
   '    <!-- a href="#" class="w3-bar-item w3-button">SEARCH</a -->' +
   '  </div>' +
   '</div>';
@@ -175,9 +175,6 @@ function getPiece(code) {
 }
 
 function display_piece(artwork_code) {
-//TODO: format this page
-//TODO: add image
-//TODO: add ordering instructions
   axios.all( [getPiece(artwork_code), getSizes(artwork_code)] )
   .then(axios.spread(function (artwork_response, sizes_response) {
     var s = navigation();
@@ -194,6 +191,31 @@ function display_piece(artwork_code) {
       s += 'Price: ' + element.product_type.data.product_type_price  + ' (USD)</div>';
     })
     s += '<p>To order, email or call (see below) and give the title and size.</p></div>';
+    s += footer();
+    document.getElementById("theBody").innerHTML = s;
+  }))
+  .catch(function (error) {
+      document.getElementById("theBody").innerHTML = error;
+  });
+}
+
+function getArticle(id) {
+  return axios.get(api + 'tables/news_articles/rows/' + id);
+}
+
+function display_article(id) {
+  axios.all( [getArticle(id)] )
+  .then(axios.spread(function (article_response) {
+    var s = navigation();
+    s += page_title(article_response.data.data.article_title);
+    s += '<div class="w3-row w3-margin-top w3-margin-bottom">';
+    s += '  <div class="w3-col m12 l3 w3-padding">';
+    s += '    <img class="galleryImg w3-center" src="' + host + article_response.data.data.article_featured_image.data.url + '"/><br/>';
+    s += '  </div>';
+    s += '  <div class="w3-col m12 l9 w3-padding">';
+    s += '    <h4>' + article_response.data.data.article_copy + '</h4>';
+    s += '  </div>';
+    s += '</div><br/>';
     s += footer();
     document.getElementById("theBody").innerHTML = s;
   }))
@@ -218,7 +240,7 @@ function displayGallery() {
     var s = navigation() + page_title('GALLERY');
     s += text_section(blurb_response.data.data[0].blurb_content);
     s += '<div class="w3-row w3-margin-top w3-margin-bottom w3-center">';
-    artwork_response.data.data.forEach(function(element){
+    artwork_response.data.data.reverse().forEach(function(element){
       s += '  <div class="w3-col m12 l4 w3-padding">';
       s += '  <a href="index.html?page=piece&artwork_code=' + element.artwork_code + '"><img class="galleryImg" src="' + host + element.artwork_image.data.url + '"/></a><br/>';
       s += '<h4>' + element.artwork_title + '</h4>';
@@ -278,24 +300,27 @@ function getNews() {
 }
 
 function displayNews() {	
-//TODO: format page
-//TODO: individual article pages
   axios.all([getBlurb('News Blurb'), getNews()])
   .then(axios.spread(function (blurb_response, news_response) {
     // All requests are now complete
-          var s = navigation() + page_title('NEWS');
-          s += text_section(blurb_response.data.data[0].blurb_content);
-          news_response.data.data.forEach(function(element){
-            s += '<img src="' + host + element.article_featured_image.data.url + '"/><br/>';
-            s += '<div>' + element.article_title 		+ '</div>';
-            s += '<div>' + element.article_copy 	+ '</div>';
-            s += footer();
-          })
-          document.getElementById("theBody").innerHTML = s;	
-        }))
-        .catch(function (error) {
-            document.getElementById("theBody").innerHTML = error;
-        });
+    var s = navigation() + page_title('NEWS');
+    s += text_section(blurb_response.data.data[0].blurb_content);
+    s += '<div class="w3-row w3-margin-top w3-margin-bottom w3-center">';
+    news_response.data.data.reverse().forEach(function(element){
+      s += '  <div class="w3-col m12 l4 w3-padding">';
+      s += '    <a href="index.html?page=article&id=' + element.id + '"><img src="' + host + element.article_featured_image.data.url + '"/></a><br/>';
+      s += '    <div>' + element.article_title 		+ '</div>';
+      s += '    <div>' + element.teaser 	+ '</div>';
+      s += '    <p><a href="index.html?page=article&id=' + element.id + '" class="w3-button w3-white w3-border w3-round-large">View Story</a>'; 
+      s += '  </div>';
+    })
+    s += '</div>';
+    s += footer();
+    document.getElementById("theBody").innerHTML = s;	
+  }))
+  .catch(function (error) {
+      document.getElementById("theBody").innerHTML = error;
+  });
 }
 
   function getNews() {
@@ -345,10 +370,7 @@ function text_section(blurb) {
   '</div></div>';
 }
 
-function home_latest() {
-  //TODO: dynamically fetch latest artwork
-  //TODO: Go To Image link
-  //TODO: Go To Article link
+function home_latest(art, news) {
   return '' +
   '<!-- Second Parallax Image with Portfolio Text -->' +
   '<div class="bgimg-2 w3-display-container w3-opacity-min-off">' +
@@ -360,29 +382,31 @@ function home_latest() {
   '<div class="w3-row w3-margin-top w3-margin-bottom w3-center">' +
   '  <div class="w3-col m12 l6 w3-padding">' +
   '    <h3>LATEST ARTWORK</h3>' +
-  '    <img class="w3-image" src="http://andrewspringmanart.com/directus/storage/uploads/00000000006.png"/>' +
-  '    <h4>Providence Cross</h4>' +
-  '    <p>The cross in this image is deliberately created by using a fixed modulus near the axes and a variable modulus away from the axes.</p>' +
-  '    <p><a href="#" class="w3-button w3-white w3-border w3-round-large">Go To Image</a> &nbsp; <a class="w3-button w3-white w3-border w3-round-large" href="index.html?page=gallery">Gallery</a></p>' +
+  '    <a href="index.html?page=piece&artwork_code=' + art.artwork_code + '"><img class="w3-image" src="' + host + art.artwork_image.data.url + '"/></a>' +
+  '    <h4>' + art.artwork_title + '</h4>' +
+  '    <p><a href="index.html?page=piece&artwork_code=' + art.artwork_code + '" class="w3-button w3-white w3-border w3-round-large">Go To Image</a> &nbsp; ' +
+  '<a class="w3-button w3-white w3-border w3-round-large" href="index.html?page=gallery">Gallery</a></p>' +
   '  </div>' +
   '    <div class="w3-col m12 l6 w3-padding">' +
   '    <h3>LATEST NEWS</h3>' +
-  '      <img class="w3-image" src="http://andrewspringmanart.com/directus/storage/uploads/00000000007.jpg"/>' +
-  '      <h4>A Website is Born</h4>' +
-  '      <p>We are excited to launch AndrewSpringmanArt.com.&nbsp; Please have a look around.&nbsp; Please don\'t hesitate to contact us with questions or comments.&nbsp; Call us at 860-874-9733 or write us at <a href="mailto:info@andrewspringmanart.com" target="_blank" rel="noopener noreferrer">info@andrewspringmanart.com</a>.</p>' +
-  '      <p><a href="#" class="w3-button w3-white w3-border w3-round-large">This Story</a> &nbsp; <a href="index.html?page=news" class="w3-button w3-white w3-border w3-round-large">More Articles</a></p>' +
+  '      <a href="index.html?page=article&id=' + news.id + '"><img class="w3-image" src="' + host + news.article_featured_image.data.url + '"/></a>' +
+  '      <h4>' + news.article_title + '</h4>' + 
+  news.teaser +
+  '      <p><a href="index.html?page=article&id=' + news.id + '" class="w3-button w3-white w3-border w3-round-large">This Story</a> &nbsp; ' + 
+  '<a href="index.html?page=news" class="w3-button w3-white w3-border w3-round-large">More Articles</a></p>' +
   '    </div>' +
   '</div>';
 }
 
-function home_contact() {
-  return '' +
-  '<!-- Third Parallax Image with Portfolio Text -->' +
+function contact_form(home = false) {
+  title = home ? '<!-- Third Parallax Image with Portfolio Text -->' +
   '<div class="bgimg-3 w3-display-container w3-opacity-min-off" id="contact">' +
   '  <div class="w3-display-middle">' +
   '     <span class="w3-xxlarge w3-text-camo-black w3-wide">CONTACT</span>' +
   '  </div>' +
-  '</div>' +
+  '</div>' : page_title("CONTACT");
+
+  return title +
   '' +
   '<!-- Container (Contact Section) -->' +
   '<div class="w3-content w3-container" >' +
@@ -409,20 +433,27 @@ function home_contact() {
 }
 
 function displayHome() {	
-  axios.all([getBlurb('Home Blurb')])
-  .then(axios.spread(function (blurb_response) {
+  axios.all([getBlurb('Home Blurb'), getArtwork(), getNews()])
+  .then(axios.spread(function (blurb_response, artwork_response, news_response) {
     // All requests are now complete
-    var s = navigation()
+    var s = navigation(true)
           + home_logo()
           + text_section(blurb_response.data.data[0].blurb_content)
-          + home_latest()
-          + home_contact()
+          + home_latest(artwork_response.data.data.pop(), news_response.data.data.pop())
+          + contact_form(true)
           + footer();
     document.getElementById("theBody").innerHTML = s;	
   }))
   .catch(function (error) {
       document.getElementById("theBody").innerHTML = error;
   });
+}
+
+function displayContact() {	
+  var s = navigation()
+        + contact_form()
+        + footer();
+  document.getElementById("theBody").innerHTML = s;	
 }
 
 function router() {
@@ -444,12 +475,23 @@ function router() {
       case 'faq':
           displayFAQs();
           break;
+      case 'contact':
+          displayContact();
+          break;
       case 'piece':
         var artwork_code = url.searchParams.get("artwork_code");
         if (artwork_code == '') {
           displayHome();
         } else {
           display_piece(artwork_code);
+        }
+        break;
+      case 'article':
+        var id = url.searchParams.get("id");
+        if (id == '') {
+          displayHome();
+        } else {
+          display_article(id);
         }
         break;
       default:
