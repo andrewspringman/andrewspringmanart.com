@@ -406,6 +406,7 @@ function sendContact() {
   axios.get(url)
   .then(function (response) {
     document.getElementById("thankYou").innerHTML = "THANK YOU!";
+    document.getElementById("sendButton").innerHTML = '<i class="fa fa-paper-plane"></i> SEND ANOTHER';
   })
   .catch(function (error) {
     document.getElementById("thankYou").innerHTML = error;
@@ -429,7 +430,7 @@ function contact_form(home = false) {
   '  <div class="w3-row  w3-section">' +
   '    <h4>We would love to hear from you! <span id="thankYou"></span></h4>' +
   '    <div class="w3-panel">' +
-  '      <form onSubmit="sendContact()" id="contactForm">' +
+  '      <form onSubmit="return sendContact();" id="contactForm">' +
   '        <div class="w3-row-padding" style="margin:0 -16px 8px -16px">' +
   '          <div class="w3-half">' +
   '            <input class="w3-input w3-light-gray" type="text" placeholder="Name" required name="Name">' +
@@ -439,7 +440,7 @@ function contact_form(home = false) {
   '          </div>' +
   '        </div>' +
   '        <textarea style="height:200px" class="w3-input w3-light-gray" type="text" placeholder="Message" required name="Message"></textarea>' +
-  '        <button class="w3-button w3-black w3-right w3-section" type="submit">' +
+  '        <button id="sendButton" class="w3-button w3-black w3-right w3-section" type="submit">' +
   '          <i class="fa fa-paper-plane"></i> SEND MESSAGE' +
   '        </button>' +
   '      </form>' +
