@@ -398,7 +398,23 @@ function home_latest(art, news) {
   '</div>';
 }
 
+function sendContact() {
+  var name    = encodeURIComponent(document.getElementById("contactForm").elements["Name"].value);
+  var email   = encodeURIComponent(document.getElementById("contactForm").elements["Email"].value);
+  var message = encodeURIComponent(document.getElementById("contactForm").elements["Message"].value);
+  var url     = '/contact.php?Name=' + name + '&Email=' + email + '&Message=' + message;
+  axios.get(url)
+  .then(function (response) {
+    document.getElementById("thankYou").innerHTML = "THANK YOU!";
+  })
+  .catch(function (error) {
+    document.getElementById("thankYou").innerHTML = error;
+  });
+  return false;
+}
+
 function contact_form(home = false) {
+
   title = home ? '<!-- Third Parallax Image with Portfolio Text -->' +
   '<div class="bgimg-3 w3-display-container w3-opacity-min-off" id="contact">' +
   '  <div class="w3-display-middle">' +
@@ -411,9 +427,9 @@ function contact_form(home = false) {
   '<!-- Container (Contact Section) -->' +
   '<div class="w3-content w3-container" >' +
   '  <div class="w3-row  w3-section">' +
-  '    <h4>We would love to hear from you!</h4>' +
+  '    <h4>We would love to hear from you! <span id="thankYou"></span></h4>' +
   '    <div class="w3-panel">' +
-  '      <form action="/contact.php" target="_blank">' +
+  '      <form onSubmit="sendContact()" id="contactForm">' +
   '        <div class="w3-row-padding" style="margin:0 -16px 8px -16px">' +
   '          <div class="w3-half">' +
   '            <input class="w3-input w3-light-gray" type="text" placeholder="Name" required name="Name">' +

@@ -12,5 +12,5 @@ MESSAGE:
 $message
 ";
 
-mail("sales@andrewspringmanart.com","Website Contact from $name",$msg);
+mail("andrew@andrewspringmanart.com","Website Contact from $name",$msg);
 ?>
