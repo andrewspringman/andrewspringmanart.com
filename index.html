@@ -85,8 +85,8 @@ body, html {
 var host = 'http://andrewspringmanart.com';
 var api = host + '/directus/api/1.1/';
 
-function navigation(home = false) {
-  contact_link = home ? 'index.html#contact' : 'index.html?page=contact';
+function navigation() {
+  contact_link = 'index.html?page=contact';
   return '' +
   '<!-- Navbar (sit on top) -->' +
   '<div class="w3-top">' +
@@ -414,7 +414,7 @@ function sendContact() {
   return false;
 }
 
-function contact_form(home = false) {
+function contact_form(blurb, home = false) {
 
   title = home ? '<!-- Third Parallax Image with Portfolio Text -->' +
   '<div class="bgimg-3 w3-display-container w3-opacity-min-off" id="contact">' +
@@ -428,7 +428,7 @@ function contact_form(home = false) {
   '<!-- Container (Contact Section) -->' +
   '<div class="w3-content w3-container" >' +
   '  <div class="w3-row  w3-section">' +
-  '    <h4>We would love to hear from you! <span id="thankYou"></span></h4>' +
+  '    <h4>' + blurb + ' <span id="thankYou"></span></h4>' +
   '    <div class="w3-panel">' +
   '      <form onSubmit="return sendContact();" id="contactForm">' +
   '        <div class="w3-row-padding" style="margin:0 -16px 8px -16px">' +
@@ -450,14 +450,14 @@ function contact_form(home = false) {
 }
 
 function displayHome() {	
-  axios.all([getBlurb('Home Blurb'), getArtwork(), getNews()])
-  .then(axios.spread(function (blurb_response, artwork_response, news_response) {
+  axios.all([getBlurb('Home Blurb'), getBlurb('Contact Blurb'), getArtwork(), getNews()])
+  .then(axios.spread(function (home_response, contact_response, artwork_response, news_response) {
     // All requests are now complete
-    var s = navigation(true)
+    var s = navigation()
           + home_logo()
-          + text_section(blurb_response.data.data[0].blurb_content)
+          + text_section(home_response.data.data[0].blurb_content)
           + home_latest(artwork_response.data.data.pop(), news_response.data.data.pop())
-          + contact_form(true)
+          + contact_form(contact_response.data.data[0].blurb_content,true)
           + footer();
     document.getElementById("theBody").innerHTML = s;	
   }))
@@ -467,10 +467,17 @@ function displayHome() {
 }
 
 function displayContact() {	
-  var s = navigation()
-        + contact_form()
-        + footer();
-  document.getElementById("theBody").innerHTML = s;	
+  axios.all([getBlurb('Contact Blurb')])
+  .then(axios.spread(function (contact_response) {
+    // All requests are now complete
+    var s = navigation()
+    + contact_form(contact_response.data.data[0].blurb_content)
+    + footer();
+    document.getElementById("theBody").innerHTML = s;	
+  }))
+  .catch(function (error) {
+      document.getElementById("theBody").innerHTML = error;
+  });
 }
 
 function router() {
