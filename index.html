@@ -349,7 +349,14 @@ function displayAbout() {
   .then(axios.spread(function (blurb_response) {
     // All requests are now complete
     var s = navigation() + page_title('THE ARTIST');
-    s += text_section(blurb_response.data.data[0].blurb_content);
+    s += '<!-- Container (About Section) -->' +
+    '<div class="w3-row w3-center"><div class="w3-col l12 w3-padding">' +
+    '  <div class="w3-col m12 l3 w3-padding"></div>' +
+    '  <div class="w3-col m12 l6 w3-padding">' +
+        blurb_response.data.data[0].blurb_content +
+    '  </div>' +
+    '  <div class="w3-col m12 l3 w3-padding"></div>' +
+    '</div></div>';
     s += footer();
     document.getElementById("theBody").innerHTML = s;	
   }))
