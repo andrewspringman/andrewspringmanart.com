@@ -294,7 +294,9 @@ function displayFAQs() {
     var s = navigation() + page_title('FAQ');
     var category = '';
     s += text_section(blurb_response.data.data[0].blurb_content);
-    s += '<div class="max90">';
+    s += '<div class="w3-row w3-center">';
+    s += '<div class="w3-col m12 l3 w3-padding"></div>'; 
+    s += '<div class="w3-col m12 l6 w3-padding">';
     faq_response.data.data.forEach(function(element){
       if (category != element.faq_category.data.faq_category) {
         category = element.faq_category.data.faq_category;
@@ -303,7 +305,9 @@ function displayFAQs() {
       s += '<button onclick="accordionFunction(\'faq' + element.id + '\')" class="w3-btn w3-block w3-light-grey w3-left-align w3-wrap faqButton">' + element.faq_question + '</button>';
       s += '<div id="faq' + element.id + '" class="w3-container w3-hide">' + element.faq_answer + '</div>';
     })
-    s += '</div><br/>';
+    s += '</div>';
+    s += '</div>';
+    s += '<div class="w3-col m12 l3 w3-padding"></div><br/>'     
     s += footer();
     document.getElementById("theBody").innerHTML = s;	
   }))
