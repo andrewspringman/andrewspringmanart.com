@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-121941384-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-121941384-1');
+</script>
+
 <title>ANDREW SPRINGMAN ART</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -234,21 +244,28 @@ function getArtwork() {
 
 function displayGallery() {	
 //TODO: Add at least one more image to gallery
-  axios.all([getBlurb('Gallery Blurb'), getArtwork()])
-  .then(axios.spread(function (blurb_response, artwork_response) {
+  axios.all([getBlurb('Gallery Blurb'), getArtwork(), getBlurb('Gallery Footer Blurb')])
+  .then(axios.spread(function (blurb_response, artwork_response, footer_blurb_response ) {
     // All requests are now complete
     var s = navigation() + page_title('GALLERY');
     s += text_section(blurb_response.data.data[0].blurb_content);
-    s += '<div class="w3-row w3-margin-top w3-margin-bottom w3-center">';
+    var numPieces = 0;
     artwork_response.data.data.reverse().forEach(function(element){
+      ++numPieces;
+      if ((numPieces % 3) == 1) {
+        s += '<div class="w3-row w3-margin-top w3-margin-bottom w3-center">';
+      }
       s += '  <div class="w3-col m12 l4 w3-padding">';
       s += '  <a href="index.html?page=piece&artwork_code=' + element.artwork_code + '"><img class="galleryImg" src="' + host + element.artwork_image.data.url + '"/></a><br/>';
       s += '<h4>' + element.artwork_title + '</h4>';
 //      s += element.artwork_description;
 //      s += '<a href="index.html?page=piece&artwork_code=' + element.artwork_code + '">Sizes and Prices</a>';
       s += '  </div>';
+      if ((numPieces % 3) == 0) {
+        s += '</div>';
+      }
     })
-    s += '</div><br/>';
+    s += text_section(footer_blurb_response.data.data[0].blurb_content);
     s += footer();
     document.getElementById("theBody").innerHTML = s;	
   }))
@@ -328,7 +345,6 @@ function displayNews() {
 }
 
 function displayAbout() {	
-  //TODO: copy for this page
   axios.all([getBlurb('Artist Blurb')])
   .then(axios.spread(function (blurb_response) {
     // All requests are now complete
@@ -366,7 +382,11 @@ function text_section(blurb) {
   return '' +
   '<!-- Container (About Section) -->' +
   '<div class="w3-row w3-center"><div class="w3-col l12 w3-padding">' +
+  '  <div class="w3-col m12 l3 w3-padding"></div>' +
+  '  <div class="w3-col m12 l6 w3-padding">' +
   '  <h4>' + blurb + '</h4>' +
+  '  </div>' +
+  '  <div class="w3-col m12 l3 w3-padding"></div>' +
   '</div></div>';
 }
 
